@@ -14,10 +14,9 @@ def get_anchor_tags_from_html(html_content):
 
 def get_aria_tags_from_html(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
-    btn_tags=soup.find_all('button')
-    a_tags=soup.find_all('button')
-    input_tags=soup.find_all('button')
-    nav_tags=soup.find_all('button')
-    required_tags=btn_tags + a_tags + input_tags + nav_tags
+    btn_tags = soup.find_all('button')
+    a_tags = soup.find_all('a')
+    input_tags = soup.find_all('input')
+    nav_tags = soup.find_all('nav')
+    required_tags = btn_tags + a_tags + input_tags + nav_tags
     return required_tags
-

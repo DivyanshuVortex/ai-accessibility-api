@@ -1,8 +1,9 @@
+import asyncio
+import sys
+
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
-import sys
-import asyncio
 
 def prettify_html(html_content):
     if html_content:
@@ -12,7 +13,7 @@ def prettify_html(html_content):
 
 # Async wrapper for running sync Selenium code
 async def fetch_html_with_selenium(url):
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     html = await loop.run_in_executor(None, _sync_fetch_html_with_selenium, url)
     return html
 
@@ -34,4 +35,3 @@ def _sync_fetch_html_with_selenium(url):
     finally:
         if driver:
             driver.quit()
-

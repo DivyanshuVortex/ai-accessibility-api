@@ -92,6 +92,12 @@ async def analyze_html_file(
     Note: This endpoint accepts file uploads, avoiding JSON escaping issues
     """
     try:
+        if not file.filename or not file.filename.lower().endswith(('.html', '.htm')):
+            raise HTTPException(
+                status_code=400,
+                detail="Only HTML files are supported (.html, .htm)"
+            )
+
         # Read file content
         html_content = await file.read()
         html_str = html_content.decode('utf-8')
@@ -111,6 +117,8 @@ async def analyze_html_file(
             status_code=400,
             detail="File must be a valid UTF-8 encoded HTML file"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

@@ -2,7 +2,8 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 # System dependencies for Chrome/Playwright and general tooling
 RUN apt-get update && apt-get install -y \
@@ -44,7 +45,7 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome Stable (for Selenium/Axe)
+# Install Google Chrome Stable for Selenium/Axe checks
 RUN set -eux; \
     arch="$(dpkg --print-architecture)"; \
     wget -O /tmp/google-chrome.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_${arch}.deb" || \
@@ -55,30 +56,24 @@ RUN set -eux; \
 
 WORKDIR /app
 
-# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
+RUN pip install -r requirements.txt \
     && python -m playwright install chromium
 
-# Copy application code
 COPY . .
 
-# Create non-root user for security
 RUN addgroup --system app && adduser --system --home /home/app --ingroup app app \
     && mkdir -p /home/app/.cache \
     && chown -R app:app /home/app /app
+
 USER app
 
-# Cloud Run will set PORT; default to 8080
 ENV PORT=8080 \
     HOME=/home/app \
-    XDG_CACHE_HOME=/home/app/.cache
-
-# Ensure Chrome binaries are discoverable
-ENV GOOGLE_CHROME_SHIM=/usr/bin/google-chrome \
+    XDG_CACHE_HOME=/home/app/.cache \
+    GOOGLE_CHROME_SHIM=/usr/bin/google-chrome \
     CHROME_BIN=/usr/bin/google-chrome
 
 EXPOSE 8080
 
-# Start the FastAPI app with uvicorn, binding to Cloud Run's PORT
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

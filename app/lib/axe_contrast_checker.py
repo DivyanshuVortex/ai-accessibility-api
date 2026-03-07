@@ -9,10 +9,9 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from axe_selenium_python import Axe
 from bs4 import BeautifulSoup
-import json
 import tempfile
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 class AxeColorContrastChecker:
@@ -93,6 +92,7 @@ class AxeColorContrastChecker:
         Returns:
             Dictionary with violations
         """
+        temp_path = None
         try:
             self._setup_driver()
             
@@ -120,8 +120,6 @@ class AxeColorContrastChecker:
             color_issues = self._filter_color_contrast_issues(results)
             
             # Clean up temp file
-            os.unlink(temp_path)
-            
             return {
                 'source': 'html_content',
                 'violations': color_issues,
@@ -130,6 +128,8 @@ class AxeColorContrastChecker:
             }
             
         finally:
+            if temp_path and os.path.exists(temp_path):
+                os.unlink(temp_path)
             self._cleanup_driver()
     
     def _filter_color_contrast_issues(self, axe_results: Dict) -> List[Dict]:
@@ -253,7 +253,7 @@ class AxeColorContrastChecker:
                                 tooltip.string = f"⚠ {impact.upper()}: Contrast issue"
                                 elem.insert(0, tooltip)
                                 break
-            except Exception as e:
+            except Exception:
                 # Skip if we can't mark this element
                 continue
         
@@ -307,51 +307,3 @@ def check_html_contrast(html_content: str, add_markers: bool = False) -> Dict:
         result['marked_html'] = marked_html
     
     return result
-
-
-# Example usage
-if __name__ == "__main__":
-    print("=" * 80)
-    print("Axe-Core Color Contrast Checker Demo")
-    print("=" * 80)
-    print()
-    
-    # Test with sample HTML
-    test_html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Test Page</title>
-    </head>
-    <body>
-        <h1 style="color: #777; background: #fff;">Medium Contrast Title</h1>
-        <p style="color: #ccc; background: #fff;">Very Low Contrast Paragraph</p>
-        <p style="color: #000; background: #fff;">Good Contrast Paragraph</p>
-        <button style="color: #fff; background: #ffff00;">Bad Button</button>
-    </body>
-    </html>
-    """
-    
-    print("Testing HTML content...")
-    print("-" * 80)
-    
-    result = check_html_contrast(test_html, add_markers=True)
-    
-    print(f"Total Issues Found: {result['total_issues']}")
-    print(f"Passed: {result['passed']}")
-    print()
-    
-    if result['violations']:
-        print("Violations:")
-        for i, violation in enumerate(result['violations'], 1):
-            print(f"\n{i}. {violation['description']}")
-            print(f"   Impact: {violation['impact'].upper()}")
-            print(f"   Element: {violation['element']['html'][:100]}...")
-            print(f"   Issue: {violation['failure_summary'][:150]}...")
-    
-    if 'marked_html' in result:
-        print("\n" + "-" * 80)
-        print("✓ Marked HTML generated")
-        print("  Save result['marked_html'] to a file to see visual markers")
-    
-    print("\n" + "=" * 80)

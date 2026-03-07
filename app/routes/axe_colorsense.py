@@ -80,7 +80,7 @@ async def examine_html_file(
     """
     try:
         # Validate file type
-        if not file.filename.endswith('.html'):
+        if not file.filename or not file.filename.lower().endswith(('.html', '.htm')):
             raise HTTPException(
                 status_code=400,
                 detail="Only HTML files are supported"
@@ -106,6 +106,8 @@ async def examine_html_file(
             status_code=400,
             detail="File must be valid UTF-8 encoded HTML"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

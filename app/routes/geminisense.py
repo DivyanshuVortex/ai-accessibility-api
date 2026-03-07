@@ -16,7 +16,7 @@ async def gemini_suggest(input_data: InputData):
     try:
         suggestion = await generate_gemini_suggestion(input_data)
         return {
-            "input": input_data.dict(),
+            "input": input_data.model_dump(),
             "data": suggestion
         }
     except Exception as e:

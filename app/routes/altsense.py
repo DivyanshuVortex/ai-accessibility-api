@@ -57,6 +57,8 @@ async def analyze_html_file_route(file: UploadFile = File(...)):
             status_code=400,
             detail="File must be valid UTF-8 encoded HTML"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

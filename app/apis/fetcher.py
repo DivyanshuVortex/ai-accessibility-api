@@ -7,7 +7,7 @@ fetch_router=APIRouter()
 
 @fetch_router.get("/fetch")
 async def fetch_html_url(url:str):
-    fetched_html=fetch_html_with_selenium(url)
+    fetched_html = await fetch_html_with_selenium(url)
     if fetched_html:
         return fetched_html
     else:
